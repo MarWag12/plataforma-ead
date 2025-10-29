@@ -87,9 +87,10 @@ CREATE TABLE `aulas` (
   `id` int(11) NOT NULL,
   `curso_id` int(11) NOT NULL,
   `titulo` varchar(255) NOT NULL,
-  `tipo_arquivo` enum('video','pdf','texto') DEFAULT 'video',
+  `tipo_arquivo` enum('video','pdf','texto','link') DEFAULT 'video',
   `caminho_arquivo` varchar(255) DEFAULT NULL,
   `conteudo` text DEFAULT NULL,
+  `link` varchar(500) DEFAULT NULL,
   `posicao` int(11) DEFAULT 0,
   `criado_em` timestamp NOT NULL DEFAULT current_timestamp(),
   `atualizado_em` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()

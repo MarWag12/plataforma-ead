@@ -56,10 +56,128 @@ try {
             $response = ['status' => 'ok', 'dados' => $cursos];
             break;
 
+       case 'listar_publico':
+    try {
+        // Parâmetros recebidos
+        $q = trim($_POST['q'] ?? '');
+        $categoria = trim($_POST['categoria'] ?? '');
+        $page = max(1, intval($_POST['page'] ?? 1));
+        $per_page = 12;
+        $offset = ($page - 1) * $per_page;
+
+        // Condições iniciais (somente cursos publicados)
+        $where = ["c.status = 'publicado'"];
+        $params = [];
+
+        // Filtros dinâmicos
+        if ($q) {
+            $where[] = "(c.titulo LIKE ? OR c.descricao_curta LIKE ? OR u.nome LIKE ?)";
+            $params = array_merge($params, ["%$q%", "%$q%", "%$q%"]);
+        }
+        if ($categoria) {
+            $where[] = "c.categoria = ?";
+            $params[] = $categoria;
+        }
+
+        $whereStr = implode(' AND ', $where);
+
+        // ===== Total para paginação =====
+        $countQuery = "
+            SELECT COUNT(*) 
+            FROM cursos c 
+            LEFT JOIN usuarios u ON c.instrutor_id = u.id 
+            WHERE $whereStr
+        ";
+        $stmt = $pdo->prepare($countQuery);
+        $stmt->execute($params);
+        $total = (int) $stmt->fetchColumn();
+
+        // ===== Ordenação opcional =====
+        $ordem = $_POST['ordem'] ?? 'titulo'; // titulo, preco, categoria
+        $direcao = strtoupper($_POST['direcao'] ?? 'ASC');
+        $ordens_permitidas = ['titulo', 'preco', 'categoria'];
+        if (!in_array($ordem, $ordens_permitidas)) $ordem = 'titulo';
+        if (!in_array($direcao, ['ASC', 'DESC'])) $direcao = 'ASC';
+
+        // ===== Consulta paginada =====
+        $query = "
+            SELECT 
+                c.id, 
+                c.titulo, 
+                c.descricao_curta, 
+                c.imagem_capa, 
+                c.preco, 
+                u.nome AS instrutor_nome, 
+                c.categoria
+            FROM cursos c
+            LEFT JOIN usuarios u ON c.instrutor_id = u.id
+            WHERE $whereStr
+            ORDER BY c.$ordem $direcao
+            LIMIT ? OFFSET ?
+        ";
+
+        $stmt = $pdo->prepare($query);
+
+        // Bind seguro de parâmetros
+        $idx = 1;
+        foreach ($params as $p) {
+            $stmt->bindValue($idx++, $p);
+        }
+        $stmt->bindValue($idx++, (int)$per_page, PDO::PARAM_INT);
+        $stmt->bindValue($idx++, (int)$offset, PDO::PARAM_INT);
+
+        $stmt->execute();
+        $cursos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // ===== Retorno final =====
+        $response = [
+            'status' => 'ok',
+            'dados' => $cursos,
+            'total' => $total,
+            'paginas' => ceil($total / $per_page),
+            'pagina_atual' => $page
+        ];
+    } catch (Exception $e) {
+        $response = [
+            'status' => 'erro',
+            'mensagem' => $e->getMessage()
+        ];
+    }
+    break;
+
+
+        case 'listar_categorias':
+            $stmt = $pdo->query("
+                SELECT DISTINCT categoria 
+                FROM cursos 
+                WHERE categoria IS NOT NULL 
+                  AND categoria != '' 
+                  AND status = 'publicado'
+                ORDER BY categoria
+            ");
+            $response = ['status' => 'ok', 'dados' => $stmt->fetchAll(PDO::FETCH_ASSOC)];
+            break;
+
         case 'listar_instrutores':
             $query = "SELECT id, nome FROM usuarios WHERE tipo = 'instrutor' OR tipo = 'admin' ORDER BY nome";
             $instrutores = $pdo->query($query)->fetchAll();
             $response = ['status' => 'ok', 'dados' => $instrutores];
+            break;
+
+        // Endpoint de diagnóstico rápido (para debugging local)
+        case 'diagnostico':
+            // Retorna contagem de cursos publicados e algumas linhas de amostra
+            $totalStmt = $pdo->query("SELECT COUNT(*) FROM cursos WHERE status = 'publicado'");
+            $totalPublicados = (int) $totalStmt->fetchColumn();
+            $sampleStmt = $pdo->query("SELECT id, titulo, categoria, status FROM cursos LIMIT 5");
+            $sample = $sampleStmt->fetchAll(PDO::FETCH_ASSOC);
+            $response = [
+                'status' => 'ok',
+                'debug' => [
+                    'total_publicados' => $totalPublicados,
+                    'sample' => $sample
+                ]
+            ];
             break;
 
         case 'salvar':

@@ -26,16 +26,49 @@ $(document).ready(function () {
 
     // Controlar exibição dos campos baseado no tipo de arquivo
     $('#tipo_arquivo').change(function() {
-        if ($(this).val() === 'texto') {
+        const tipo = $(this).val();
+        if (tipo === 'texto') {
             $('#campoArquivo').hide();
+            $('#campoLink').hide();
             $('#campoConteudo').show();
             $('#arquivo').prop('required', false);
+            $('#link').prop('required', false);
             $('#conteudo').prop('required', true);
+        } else if (tipo === 'link') {
+            $('#campoArquivo').hide();
+            $('#campoConteudo').hide();
+            $('#campoLink').show();
+            $('#arquivo').prop('required', false);
+            $('#conteudo').prop('required', false);
+            $('#link').prop('required', true);
         } else {
             $('#campoArquivo').show();
             $('#campoConteudo').hide();
+            $('#campoLink').hide();
             $('#arquivo').prop('required', true);
             $('#conteudo').prop('required', false);
+            $('#link').prop('required', false);
+        }
+    });
+
+    // Preview de link
+    $('#link').on('input', function() {
+        const url = $(this).val().trim();
+        const previewDiv = $('#previewLink');
+        if (!url) {
+            previewDiv.empty();
+            return;
+        }
+        // simples validação
+        try {
+            const u = new URL(url);
+            previewDiv.html(`
+                <div class="alert alert-info mt-2">
+                    <i class="bi bi-link-45deg"></i> <a href="${u.href}" target="_blank" rel="noopener noreferrer">Abrir link</a>
+                </div>
+            `);
+        } catch (e) {
+            previewDiv.html('<div class="alert alert-warning mt-2">URL inválida</div>');
         }
     });
 
@@ -85,7 +118,8 @@ $(document).ready(function () {
                 let items = '';
                 ret.dados.forEach(a => {
                     const icone = a.tipo_arquivo === 'video' ? 'bi-play-circle' :
-                                a.tipo_arquivo === 'pdf' ? 'bi-file-pdf' : 'bi-file-text';
+                                    a.tipo_arquivo === 'pdf' ? 'bi-file-pdf' :
+                                    a.tipo_arquivo === 'link' ? 'bi-link-45deg' : 'bi-file-text';
                     
                     items += `
                         <li class="list-group-item" data-id="${a.id}">
@@ -191,6 +225,14 @@ $(document).ready(function () {
                             <iframe src="../${a.caminho_arquivo}"></iframe>
                         </div>
                     `;
+                } else if (a.tipo_arquivo === 'link' && a.link) {
+                    conteudo = `
+                        <div class="p-3 text-center">
+                            <a class="btn btn-primary btn-lg" href="${a.link}" target="_blank" rel="noopener noreferrer">
+                                <i class="bi bi-box-arrow-up-right"></i> Abrir link
+                            </a>
+                        </div>
+                    `;
                 } else if (a.tipo_arquivo === 'texto' && a.conteudo) {
                     conteudo = `
                         <div class="bg-light p-3 rounded">
@@ -227,6 +269,13 @@ $(document).ready(function () {
                 
                 if (a.tipo_arquivo === 'texto') {
                     $('#conteudo').val(a.conteudo);
+                } else if (a.tipo_arquivo === 'link') {
+                    $('#link').val(a.link);
+                    $('#previewLink').html(`
+                        <div class="alert alert-info mt-2">
+                            <i class="bi bi-link-45deg"></i> <a href="${a.link}" target="_blank" rel="noopener noreferrer">Abrir link</a>
+                        </div>
+                    `);
                 } else if (a.caminho_arquivo) {
                     $('#previewArquivo').html(`
                         <div class="alert alert-info mt-2">

@@ -99,8 +99,20 @@ try {
                 // Inserir nova aula
                 if ($_POST['tipo_arquivo'] === 'texto') {
                     $dados['conteudo'] = trim($_POST['conteudo'] ?? '');
+                    $dados['caminho_arquivo'] = null;
+                    $dados['link'] = null;
+                } else if ($_POST['tipo_arquivo'] === 'link') {
+                    $link = trim($_POST['link'] ?? '');
+                    if (empty($link) || !filter_var($link, FILTER_VALIDATE_URL)) {
+                        throw new Exception('Link inválido.');
+                    }
+                    $dados['link'] = $link;
+                    $dados['caminho_arquivo'] = null;
+                    $dados['conteudo'] = null;
                 } else if (isset($_FILES['arquivo'])) {
                     $dados['caminho_arquivo'] = uploadArquivo($_FILES['arquivo'], $_POST['tipo_arquivo']);
+                    $dados['conteudo'] = null;
+                    $dados['link'] = null;
                 }
 
                 $campos = array_keys($dados);
@@ -123,6 +135,19 @@ try {
                 if ($_POST['tipo_arquivo'] === 'texto') {
                     $dados['conteudo'] = trim($_POST['conteudo'] ?? '');
                     $dados['caminho_arquivo'] = null;
+                    $dados['link'] = null;
+                } else if ($_POST['tipo_arquivo'] === 'link') {
+                    $link = trim($_POST['link'] ?? '');
+                    if (empty($link) || !filter_var($link, FILTER_VALIDATE_URL)) {
+                        throw new Exception('Link inválido.');
+                    }
+                    // Remove arquivo antigo se existir
+                    if ($aula['caminho_arquivo'] && file_exists("../{$aula['caminho_arquivo']}")) {
+                        unlink("../{$aula['caminho_arquivo']}");
+                    }
+                    $dados['link'] = $link;
+                    $dados['caminho_arquivo'] = null;
+                    $dados['conteudo'] = null;
                 } else if (isset($_FILES['arquivo']) && $_FILES['arquivo']['error'] === 0) {
                     // Remove arquivo antigo se existir
                     if ($aula['caminho_arquivo'] && file_exists("../{$aula['caminho_arquivo']}")) {
@@ -130,6 +155,7 @@ try {
                     }
                     $dados['caminho_arquivo'] = uploadArquivo($_FILES['arquivo'], $_POST['tipo_arquivo']);
                     $dados['conteudo'] = null;
+                    $dados['link'] = null;
                 }
 
                 $sets = [];

@@ -52,6 +52,9 @@ $(document).ready(function () {
                                     <button class="btn btn-sm btn-warning editar" data-id="${c.id}">
                                         <i class="bi bi-pencil"></i> Editar
                                     </button>
+                                    <a href="../aulas/index.php?curso_id=${c.id}" class="btn btn-sm btn-primary aulas">
+                                        <i class="bi bi-info"></i> Aulas
+                                    </a>
                                     <button class="btn btn-sm btn-danger excluir" data-id="${c.id}">
                                         <i class="bi bi-trash"></i> Excluir
                                     </button>

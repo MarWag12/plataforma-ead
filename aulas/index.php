@@ -80,6 +80,7 @@ if (!$curso) {
                                 <option value="video">Vídeo</option>
                                 <option value="pdf">PDF</option>
                                 <option value="texto">Texto</option>
+                                <option value="link">Link (externo)</option>
                             </select>
                         </div>
 
@@ -91,6 +92,13 @@ if (!$curso) {
                                 Formatos permitidos: MP4, PDF (máx. 100MB)
                             </small>
                             <div id="previewArquivo" class="mt-2"></div>
+                        </div>
+
+                        <!-- Campo para link externo -->
+                        <div class="mb-3" id="campoLink" style="display:none;">
+                            <label>Link (URL)</label>
+                            <input type="url" name="link" id="link" class="form-control" placeholder="https://example.com/external-resource">
+                            <div id="previewLink" class="mt-2"></div>
                         </div>
 
                         <!-- Campo para conteúdo em texto -->
