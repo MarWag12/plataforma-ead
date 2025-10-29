@@ -1,0 +1,210 @@
+🧩 1. Módulo de Usuários
+
+Tabelas envolvidas: usuarios, auditoria
+
+✅ Funcionalidades cobertas:
+
+Cadastro de usuários (aluno, instrutor ou admin).
+
+Login e autenticação (via email e senha).
+
+Controle de tipo de usuário (tipo → aluno, instrutor, admin).
+
+Ativação/desativação de contas (ativo).
+
+Auditoria automática:
+
+Registra toda inserção, atualização ou exclusão de usuários.
+
+Guarda dados antigos e novos em JSON.
+
+Campos automáticos:
+
+criado_em, atualizado_em (controla tempo de criação e última modificação).
+
+💡 Exemplos de uso:
+
+Um instrutor cria sua conta.
+
+O admin desativa um usuário — ação vai para auditoria.
+
+Sistema mostra quando o usuário foi criado/atualizado.
+
+🎓 2. Módulo de Cursos
+
+Tabelas envolvidas: cursos, usuarios (instrutor_id), auditoria (pode ser estendida)
+
+✅ Funcionalidades cobertas:
+
+Criação e edição de cursos por instrutores.
+
+Atribuição do instrutor responsável (instrutor_id).
+
+Classificação por categoria e descrição curta/longa.
+
+Controle de status: rascunho ou publicado.
+
+Imagem de capa do curso.
+
+Preço (possibilidade de cursos gratuitos ou pagos).
+
+Auditoria (pode ser adicionada igual à de usuários).
+
+💡 Exemplos de uso:
+
+Um instrutor publica um curso novo.
+
+Admin altera preço ou status do curso.
+
+Alunos veem apenas cursos com status = 'publicado'.
+
+📚 3. Módulo de Aulas (Conteúdos do Curso)
+
+Tabelas envolvidas: aulas, cursos
+
+✅ Funcionalidades cobertas:
+
+Organização de conteúdo dentro dos cursos.
+
+Suporte a diferentes tipos de aula:
+
+video
+
+pdf
+
+texto
+
+Definição da ordem das aulas (posicao).
+
+Armazenamento de caminho do arquivo (uploads) e/ou conteúdo textual.
+
+Controle de datas de criação e atualização.
+
+💡 Exemplos de uso:
+
+Upload de vídeo ou PDF.
+
+Aulas organizadas por módulo (com posição).
+
+Recurso de visualização e progresso.
+
+🧑‍🎓 4. Módulo de Matrículas e Progresso
+
+Tabelas envolvidas: matriculas, usuarios, cursos
+
+✅ Funcionalidades cobertas:
+
+Registro de matrícula do aluno em um curso.
+
+Garante que um aluno não se matricule duas vezes (UNIQUE usuario_id + curso_id).
+
+Armazena:
+
+data_matricula
+
+progresso (% concluído)
+
+status (ativa, concluida, cancelada)
+
+Permite controle completo de avanço do aluno em cada curso.
+
+💡 Exemplos de uso:
+
+Aluno clica em “Matricular-se” → cria registro em matriculas.
+
+Ao assistir uma aula → sistema atualiza progresso.
+
+Conclui curso → muda status para concluida.
+
+⭐ 5. Módulo de Avaliações
+
+Tabelas envolvidas: avaliacoes, usuarios, cursos
+
+✅ Funcionalidades cobertas:
+
+Aluno avalia um curso com:
+
+Nota de 1 a 5 (CHECK (nota BETWEEN 1 AND 5))
+
+Comentário opcional.
+
+Registra quem avaliou e quando (criado_em).
+
+Relacionamento completo:
+
+Um curso pode ter várias avaliações.
+
+Um aluno pode avaliar vários cursos.
+
+💡 Exemplos de uso:
+
+Aluno deixa uma nota e comentário no final do curso.
+
+Sistema calcula média das notas do curso.
+
+Admin pode moderar comentários.
+
+🕵️‍♂️ 6. Módulo de Auditoria e Rastreamento
+
+Tabela envolvida: auditoria
+
+✅ Funcionalidades cobertas:
+
+Log de todas as alterações importantes (por triggers ou via PHP).
+
+Campos registrados:
+
+tabela_afetada
+
+acao (INSERCAO, ATUALIZACAO, EXCLUSAO)
+
+registro_id
+
+usuario_id (opcional)
+
+dados_anteriores (JSON)
+
+dados_novos (JSON)
+
+data_evento
+
+Permite rastrear quem fez o quê, quando e em qual tabela.
+
+💡 Exemplos de uso:
+
+Admin pode ver histórico de alterações em usuários e cursos.
+
+Se alguém excluir um curso acidentalmente, você sabe quem e quando.
+
+Garante transparência e segurança (requisito comum em sistemas profissionais).
+
+🧠 7. Boas práticas e requisitos técnicos atendidos
+✅ Técnicos:
+
+Normalização (3ª forma normal).
+
+FOREIGN KEY com ON DELETE CASCADE (garante limpeza automática).
+
+TIMESTAMP automático com atualização.
+
+JSON para auditoria (flexível e compatível).
+
+Enumerações (ENUM) para evitar dados inválidos.
+
+Campos com nomes descritivos e em português.
+
+Padrões de codificação UTF-8 (com acentos e emojis).
+
+Check constraints (ex: nota entre 1 e 5).
+
+✅ Operacionais:
+
+Permite expansão fácil para:
+
+Quiz/testes (basta nova tabela ligada a aulas ou cursos);
+
+Certificados (ligar à matriculas);
+
+Pagamentos (criar tabela pagamentos);
+
+Suporte e tickets (criar tabela suporte).
